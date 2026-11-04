@@ -1,0 +1,31 @@
+# Python (program_mapping_nlp_v1 · chatgpt-sol-local-bridge 공통)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+*.log
+.claude/settings.local.json
+
+# Office 잠금 파일 (program_mapping_nlp_v1)
+~$*
+
+# 원본·사본 데이터는 절대 커밋하지 않음 — 예산 문서·사업 정보 포함 (program_mapping_nlp_v1, support-program-similarity 규칙)
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+*.tsv
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.parquet
+*.hwp
+*.hwpx
+*.pdf
+
+# 이 도구가 만드는 읽기 전용 사본·변환 DB·색인 (ldx_workbench)
+.ldx/
+graphify-out/

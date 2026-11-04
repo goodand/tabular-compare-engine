@@ -1,0 +1,18 @@
+[project]
+name = "tabular-compare-engine"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "bm25s==0.3.16",
+    "duckdb==2.0.0",
+    "kiwipiepy==0.24.1",
+    "python-calamine==0.9.0",
+    "rapidfuzz==3.14.6",
+    "typer==0.27.3",
+]
+
+[dependency-groups]
+dev = [
+    "openpyxl==3.1.5",
+    "pytest==8.4.2",
+]
