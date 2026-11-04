@@ -1,0 +1,3 @@
+# 공개 저장소에 나오면 안 되는 내부 파일명·식별자. 한 줄에 하나.
+# 실제 목록은 .publish_denylist(gitignore됨)나 ~/.publish_denylist에 두고, 이 예시 파일만 커밋한다.
+internal_db_name.sqlite

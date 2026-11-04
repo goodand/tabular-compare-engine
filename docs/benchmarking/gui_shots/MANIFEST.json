@@ -1,0 +1,102 @@
+{
+ "docs/architecture/architecture.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/architecture_v3.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/architecture_v3_1.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/architecture_v3_2.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/dev_workflow.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/runtime_v3.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/runtime_v3_1.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/runtime_v3_2.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/architecture/runtime_workflow.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "설계 다이어그램(렌더, 개인정보 없음)"
+ },
+ "docs/benchmarking/gui_shots/airtable_expanded_record.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/airtable_grid_linked_field.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/airtable_junction_table.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/airtable_linked_record_card.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/airtable_synth_compare_expanded.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "계정 아바타·툴바 가림(2026-11-04 교체)"
+ },
+ "docs/benchmarking/gui_shots/airtable_synth_compare_grid_lookup.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "계정 아바타·툴바 가림(2026-11-04 교체)"
+ },
+ "docs/benchmarking/gui_shots/dataloupe_synth.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/duckdbui_notebook_synth.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/duckdbui_tree_synth.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/knime_excel_reader_synth.jpg": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ },
+ "docs/benchmarking/gui_shots/studio_review_queue.png": {
+  "masked": true,
+  "checked": "2026-11-04",
+  "note": "합성 데이터 캡처, 2026-11-04 공개 전 검사 통과"
+ }
+}

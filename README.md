@@ -39,3 +39,13 @@
 ## 데이터 금지
 
 `.gitignore`가 엑셀·CSV·SQLite·HWP·PDF와 `.ldx/` 사본을 막는다. 원본과 사본은 어떤 경우에도 커밋하지 않는다.
+
+## 공개 전 검사 (필수)
+
+이 저장소는 공개다. push 전에 `scripts/publish_check.py`가 세 가지를 막는다.
+
+1. **금지어**: 내부 DB 파일명·사람 이름 같은 식별자. 목록은 저장소에 두지 않고 `~/.publish_denylist`(또는 환경변수 `PUBLISH_DENYLIST`)에서 읽는다. 목록이 없으면 검사가 실패한다. 형식은 `.publish_denylist.example` 참고.
+2. **이미지**: 추적되는 모든 이미지는 `docs/benchmarking/gui_shots/MANIFEST.json`에 `"masked": true`로 올라 있어야 한다. 화면 캡처는 계정 아바타·이름·내부 경로를 가린 뒤 매니페스트에 적는다. 가리기 전 원본은 `gui_shots/raw/`에 두면 `.gitignore`가 막는다.
+3. **데이터 파일**: 엑셀·CSV·SQLite·HWP·PDF가 어떤 경로로든 추적되면 실패.
+
+클론 직후 한 번: `git config core.hooksPath .githooks` — 이후 `git push`마다 자동 실행. 수동: `python scripts/publish_check.py`.
