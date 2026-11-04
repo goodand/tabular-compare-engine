@@ -1,0 +1,173 @@
+# ldx Subflow 재사용 목록 (v1, 2026-11-02)
+# reuse_level: code(패키지·코드) | architecture(구조 패턴) | feature(동작·UX)
+# status: verified(이 PC 실측 또는 코드 위치 직접 확인) | located(위치만 확인, 이식 전) | unverified | excluded
+# 출처 커밋은 scratchpad clone 기준. 근거 상세: docs/dependencies.md, 공유 노트 ldx_oss_benchmark_2026-11-02.md
+
+sources:
+  ducklocal: {repo: https://github.com/JetSquirrel/DuckLocal, commit: 39ebea4, license: Apache-2.0}
+  octa: {repo: https://github.com/thorstenfoltz/octa, commit: a03088f, license: MIT}
+  rea: {repo: https://github.com/morluto/rea, commit: 8250bf2, license: MIT}
+  dataloupe: {repo: https://github.com/aurelio-nakamura/dataloupe, commit: 9204587, license: MIT}
+  dbml_erd_viewer: {repo: https://github.com/usingsky/dbml-erd-viewer, commit: 482be7e, license: MIT}
+  duck_ui: {repo: https://github.com/caioricciuti/duck-ui, commit: ce472dd, license: MIT}
+  govparse: {repo: local MCP server on this PC, license: internal}
+  datasette: {repo: https://github.com/simonw/datasette, commit: d1cc495, license: Apache-2.0}
+  harlequin: {repo: https://github.com/tconbeer/harlequin, commit: ad3ecef, license: MIT}
+  rill: {repo: https://github.com/rilldata/rill, commit: 451a57c, license: Apache-2.0}
+  duckdb_ui: {repo: https://github.com/duckdb/duckdb-ui, commit: b4f0b9b, license: "MIT (확장·TS 패키지만, 화면 비공개)"}
+  evidence: {repo: https://github.com/evidence-dev/evidence, commit: 590143b, license: MIT}
+  powerbi: {repo: "비공개 제품 — 아이디어만", license: proprietary}
+  knime: {repo: "GPLv3 — 아이디어만", license: GPL-3.0}
+# 벤치마킹 점수와 근거: docs/benchmarking/summary.md
+
+subflows:
+  - id: 1
+    name: File Scanner
+    mvp: true
+    interface: {in: "폴더 경로 목록", out: "FileAsset[] (path, size, mtime, sha256, kind) + warnings[]"}
+    reuse:
+      - {level: feature, source: ducklocal, what: "폴더 재귀 확장, 숨김·심볼릭 링크 건너뜀, \\\\?\\ 정규화", evidence: "src/sources.rs:143-206", status: located}
+      - {level: feature, source: ducklocal, what: "파일 수 한도 — 단, 조용히 버리지 말고 warnings로 보고(DuckLocal 약점 수정)", evidence: "src/sources.rs:17,203-206", status: located}
+      - {level: architecture, source: rea, what: "sha256+bytes로 변경 감지", evidence: "src/sqlite/SqliteDatabaseSnapshot.ts:31-34", status: located}
+
+  - id: 2
+    name: File Parser
+    mvp: true
+    interface: {in: "FileAsset", out: "TableAsset[] (시트·테이블별) + limitations[]"}
+    reuse:
+      - {level: code, source: "duckdb==2.0.0", what: "read_csv(encoding=cp949), read_xlsx(sheet=), ATTACH TYPE sqlite READ_ONLY", evidence: "docs/dependencies.md 실측", status: verified}
+      - {level: code, source: "python-calamine==0.9.0", what: "Excel 다중 시트·한글 시트명", evidence: "docs/dependencies.md 실측", status: verified}
+      - {level: feature, source: ducklocal, what: "시트 하나 = 테이블 하나, 이름 {파일}_{시트}, 한글 보존(Octa는 '_'로 변형해 충돌)", evidence: "ducklocal src/excel.rs:75-84; octa src/sql/workspace/mod.rs:656-676", status: located}
+      - {level: architecture, source: rea, what: "원본 격리: 읽기 전용 열기 또는 스냅샷 복사 후 읽기(방식은 W3에서 결정)", evidence: "src/sqlite/SqliteDatabaseSnapshot.ts:29-247", status: located}
+      - {level: feature, source: none, what: "CP949 자동 판별 또는 재시도 — 기본 UTF-8 실패 실측", evidence: "probe.py 결과", status: unverified}
+      - {level: feature, source: powerbi, what: "인코딩은 추론을 믿지 말고 사용자가 바꿀 수 있게, 소스 설정(인코딩·구분자)을 저장해 나중에 수정", evidence: "learn.microsoft.com/power-query/connectors/text-csv (메인 확인)", status: verified}
+      - {level: architecture, source: datasette, what: "읽기 연결 분기: 변하는 파일은 mode=ro, 고정 파일은 immutable=1, 쓰기 연결은 assert로 금지", evidence: "datasette/database.py:194-207 (메인 확인)", status: verified}
+      - {level: feature, source: none, what: "SQLite URI는 반드시 Path.as_uri()로 생성 — 이스케이프 없는 file:{path}는 '#'에서 잘려 mode=ro가 사라지고 원본 폴더에 새 파일 생성(실측)", evidence: "docs/benchmarking/round2_datasette_harlequin.md", status: verified}
+
+  - id: 3
+    name: Schema Profiler
+    mvp: true
+    interface: {in: "TableAsset", out: "ColumnProfile[] (type, distinct, nulls, top_values, histogram)"}
+    reuse:
+      - {level: code, source: "duckdb==2.0.0", what: "SUMMARIZE", status: unverified}
+      - {level: feature, source: dataloupe, what: "열 카드: 타입·고유값·NULL·상위값 비율·히스토그램", evidence: "docs/screenshot.png", status: located}
+      - {level: feature, source: powerbi, what: "열 품질 막대(유효/오류/빈 값), distinct와 unique 구분, 기본 처음 1,000행 프로파일 후 전체로 전환", evidence: "learn.microsoft.com/power-query/data-profiling-tools (메인 확인)", status: verified}
+      - {level: feature, source: rill, what: "프로파일 쿼리: NullCount, NumericHistogram", evidence: "runtime/server/queries_columns.go", status: located}
+
+  - id: 4
+    name: Data Catalog
+    mvp: true
+    interface: {in: "FileAsset[], TableAsset[], ColumnProfile[]", out: "catalog.duckdb (파일 하나)"}
+    reuse:
+      - {level: architecture, source: rea, what: "결과 봉투: limitations[], coverage(complete|unknown), 내용 해시 id", evidence: "src/domain/evidence.ts:89-106", status: located}
+      - {level: architecture, source: rill, what: "파일로 정의한 리소스를 DAG 순서로 재조정 → 변경된 파일만 증분 갱신", evidence: "runtime/reconcilers/README.md", status: located}
+      - {level: architecture, source: knime, what: "파일 목록을 먼저 표로 만들고 필터한 뒤 읽기(경로를 데이터로)", evidence: "docs.knime.com file handling guide", status: located}
+
+  - id: 5
+    name: Data Query Engine
+    mvp: true
+    interface: {in: "SQL 문자열", out: "QueryResult (columns, rows, row_count, truncated, total_rows, total_rows_exact)"}
+    reuse:
+      - {level: code, source: "duckdb==2.0.0", what: "json_serialize_sql로 읽기 전용 단일 SELECT 판정 — COPY/ATTACH/INSERT/다중 문장 거부 실측", evidence: "ducklocal src/spec/mod.rs:400-430; probe.py", status: verified}
+      - {level: feature, source: ducklocal, what: "잘림 표시 필드", evidence: "src/query.rs:42-52", status: located}
+      - {level: architecture, source: octa, what: "반면교사: 원시 SQL을 분류만 하고 실행하면 읽기 전용이 뚫림", evidence: "src/mcp/tools/run_sql.rs:195,271; src/sql/workspace/session.rs:356-368", status: verified}
+      - {level: architecture, source: datasette, what: "SQLite authorizer로 쓰기 문장 검출 — json_serialize_sql 검사와 이중화", evidence: "datasette/utils/sql_analysis.py:204-247", status: located}
+      - {level: feature, source: datasette, what: "쿼리 시간 제한(progress handler) + 행 수 제한 + fetchmany 자르기", evidence: "datasette/database.py:749-756; utils/__init__.py:406-425", status: located}
+      - {level: feature, source: harlequin, what: "쿼리 취소 conn.interrupt()와 타임아웃 종료 코드", evidence: "src/harlequin_sqlite/adapter.py:228-229", status: located}
+      - {level: architecture, source: knime, what: "지연 실행: 쿼리를 쌓아 두고 마지막에 한 번 실행(대용량 SQLite)", evidence: "docs.knime.com db extension guide", status: located}
+
+  - id: 6
+    name: Full-text Search
+    mvp: true
+    interface: {in: "query, scope", out: "Hit[] (file, table, column, row, value, score)"}
+    reuse:
+      - {level: code, source: "kiwipiepy==0.24.1", what: "한국어 형태소 분석", evidence: "probe.py", status: verified}
+      - {level: code, source: "bm25s==0.3.16", what: "BM25 색인", status: unverified}
+
+  - id: 7
+    name: Fuzzy Search
+    mvp: true
+    interface: {in: "query", out: "Hit[]"}
+    reuse:
+      - {level: code, source: "rapidfuzz==3.14.6", what: "문자열 유사도", status: unverified}
+      - {level: feature, source: none, what: "한글 자모 분해 후 비교", status: unverified}
+
+  - id: 8
+    name: Vector Search
+    mvp: false
+    reuse: []
+
+  - id: 9
+    name: Search Pipeline
+    mvp: true
+    interface: {in: "Hit[] per retriever", out: "RankedHit[] (scores per retriever, rrf, matched_by)"}
+    reuse:
+      - {level: architecture, source: none, what: "Retriever 인터페이스 + RRF 결합(자체)", status: unverified}
+      - {level: feature, source: octa, what: "결과 형식 '파일 · 행 · 열 — 값', 범위 선택(탭/폴더/전체)", evidence: "docs/assets/screenshots/multi-search-panel.png", status: located}
+
+  - id: 10
+    name: Document Parser
+    mvp: false
+    reuse:
+      - {level: code, source: govparse, what: "parse_document, convert_hwp, export_rag_chunks 등 MCP 도구", status: unverified}
+      - {level: code, source: docling, what: "HWP/HWPX 미지원(base_models.py:100-129), 사용자 결정으로 제외", status: excluded}
+
+  - id: 11
+    name: Chunk Manager
+    mvp: false
+    reuse: []
+
+  - id: 12
+    name: Relationship Inference
+    mvp: false
+    reuse:
+      - {level: feature, source: octa, what: "대상 선택(탭/폴더/DB), 값 겹침 점수, 기준값 슬라이더, 연결선 점수", evidence: "docs/assets/screenshots/relationship-map.png", status: located}
+
+  - id: 13
+    name: ERD Viewer
+    mvp: false
+    reuse:
+      - {level: feature, source: dbml_erd_viewer, what: "PK/FK 배지, 카디널리티, 확정=실선·추론=점선", evidence: "docs/hero.png", status: located}
+
+  - id: 14
+    name: Clustering
+    mvp: false
+    reuse: []
+
+  - id: 15
+    name: Plugin Runtime
+    mvp: false
+    note: "혼자 쓰는 전제로 MVP 제외"
+    reuse: []
+
+  - id: 16
+    name: Workflow / Job Manager
+    mvp: false
+    reuse: []
+
+  - id: 17
+    name: Data Explorer UI
+    mvp: true
+    note: "화면 기술 미정"
+    reuse:
+      - {level: feature, source: dataloupe, what: "열 카드 + 그리드 + 전체 열 검색 레이아웃", evidence: "docs/screenshot.png", status: located}
+      - {level: architecture, source: ducklocal, what: "엔진과 GUI 분리, 단 core에서 UI import 금지(DuckLocal은 spec→gpui 의존으로 분리 깨짐)", evidence: "src/main.rs:41-49; src/spec/prepare.rs:27", status: verified}
+      - {level: architecture, source: duckdb_ui, what: "로컬 웹 서버는 localhost 한정 + Origin 검사", evidence: "src/http_server.cpp:404-408", status: located}
+      - {level: feature, source: datasette, what: "패싯·비SQL 필터 UI(exact/contains/in/gte…)", evidence: "datasette/facets.py; filters.py:271-370", status: located}
+      - {level: code, source: datasette, what: "사람용 보조 화면으로 지금 바로 사용 가능(PyPI, -i 읽기 전용). 단 '#' 경로 주의", status: unverified}
+      - {level: code, source: duckdb_ui, what: "보조 SQL 화면(duckdb -ui). 화면을 ui.duckdb.org에서 받음 — 이 PC 연결됨(200), 오프라인 불가", evidence: "src/include/settings.hpp:8 (메인 확인)", status: verified}
+
+  - id: 18
+    name: Agent CLI
+    mvp: true
+    interface: {in: "명령 + 인자", out: "stdout JSON 하나 / stderr {error:{kind,message,hint}} + 종료 코드"}
+    reuse:
+      - {level: code, source: "typer==0.27.3", what: "CLI 프레임워크", status: unverified}
+      - {level: feature, source: ducklocal, what: "JSON 출력·종료 코드 규약(0/1/2)", evidence: "src/cli.rs:39-43", status: located}
+      - {level: architecture, source: rea, what: "계약 객체 하나에서 CLI·API·MCP 파생", evidence: "src/contracts/toolContractTypes.ts", status: located}
+      - {level: architecture, source: rea, what: "효과 플래그 → 읽기 전용 표시 계산, 원본 쓰기 플래그면 등록 실패", evidence: "src/contracts/toolEffects.ts:765-786", status: verified}
+      - {level: architecture, source: rea, what: "에러 분류 JSON 스키마", evidence: "docs/error-contract.schema.json (존재 확인)", status: located}
+      - {level: feature, source: rea, what: "doctor 진단 명령", evidence: "src/cli/setupCommands.ts", status: located}
+      - {level: feature, source: datasette, what: "고정 오류 봉투 {ok:false, error, errors, status}, 서버 없이 같은 앱을 부르는 --get", evidence: "datasette/utils/__init__.py:1471-1483; cli.py:449", status: located}
+      - {level: feature, source: evidence, what: "--columns(이름·타입만), --format json|jsonl|csv|table, --limit, '-'로 stdin", evidence: "docs/cli/commands.mdx", status: located}
+      - {level: architecture, source: harlequin, what: "어댑터 계약 + IMPLEMENTS_READ_ONLY 같은 기능 선언, CLI가 에이전트용 SKILL.md 출력", evidence: "src/harlequin/adapter.py:83-154; src/harlequin/cli.py:457-463", status: located}
