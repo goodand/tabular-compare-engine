@@ -1,7 +1,7 @@
 # 저장소 이름 검증 결과 (최종 2026-11-04)
 
 > **확정: 저장소 `tabular-compare-engine`** — https://github.com/goodand/tabular-compare-engine.git (사용자가 생성)
-> **GUI 유형(decision-labeling-studio `kind`): `table_compare`**
+> **GUI 유형(decision-labeling-studio `kind`): `grid_compare_triage`** — g8 회차 사용자 채택(임시, 바뀔 수 있음). 이전 `table_compare`는 철회
 > 막힌 질문: 없음.
 
 ## 확정된 정의
@@ -32,7 +32,47 @@
 
 **결정 이유**: `tabular`는 10개 전부 "표 형태 데이터"로 안정, `grid`는 `compare`를 붙여도 격자로 흔들리고 순수 조합 3개는 이미 사용 중. `compare` 없는 10개는 비교 뜻을 전달하지 못함. `engine`은 "차이를 계산하는 핵심 로직"으로 읽혔고 판정 엔진 오독 없음. GUI 유형 `table_compare`와 계산 쪽/화면 쪽 짝. 어느 이름도 "사람이 결정"(ZZ)은 담지 못함 → README 몫.
 
-## GUI 유형 회차
+## GUI 유형 최종 (g5~g8) — `grid_compare_triage`
+경위: g4에서 `table_compare`를 골랐으나 사용자 기준(YY보다 XX·ZZ 중요, 사람의 action이 드러날 것)과 어긋나 철회. g5에서 처리 대상어(row·record·subset·case·mismatch), g6에서 집합어(record set·intersection·joint), g7에서 사용자가 원한 `grid`(사람 시야)와 `schema`(여러 DB 관계)를 시험. g6~g8은 **평가자 관점 3종**(개발자 / 최종 사용자 UX1 / UI·UX 설계자 UX2, `gui_kind_ux_variants.json`)으로 수집. 답변자 Sonnet·Haiku(gpt-6-luna는 이 기간 성공률 약 12%라 보조).
+
+| 이름 | 개발자 | 사람(UX1·UX2) | 읽힌 화면 |
+|---|---|---|---|
+| **grid_compare_triage** (채택) | 2/6 오독("시뮬레이션 격자 출력") | 0/12 | 격자 형태 표에서 항목을 나란히 비교해 우선순위·범주로 분류 |
+| grid_compare_record_triage | 0 | 0 | 레코드를 그리드로 나란히, 일치·불일치·누락·중복 확인 후 분류 (4단어라 제외) |
+| tabular_compare_record_triage | 0 | 0 | 일치·다름·한쪽에만 있는 레코드 목록, 승인·무시·보류 (4단어라 제외) |
+| tabular_compare_triage, *_case_triage | "자동화" 각 1건 → 게이트 제외 | | |
+| *_intersection_triage | 0 | 0 | 교집합(양쪽 모두 있는 행) 중심으로 좁게 읽힘 |
+| *_joint_triage | 0 | 0 | 흐릿함(joint가 더하는 뜻 없음) |
+| *schema* 5개 | 2개 "자동" 제외 | 구조만 | 열 이름·타입 같은 **구조** 비교로 읽힘 → 레코드 처리 아님 |
+| compare 없는 형태 | | | 대조 뜻 사라짐 |
+
+**발견**: `grid`는 개발자 관점에서 격자·좌표로 읽히지만 사람 관점에서는 "행·열 격자로 나란히 놓은 표"로 읽힌다. 화면 유형 이름은 사람이 읽으므로 사용자가 **사람 관점 기준**으로 `grid_compare_triage`(3단어)를 채택. 개발자 관점 오독은 studio 맥락(다른 kind 목록)이 줄여 준다고 판단. `record`를 붙이면 개발자 관점 오독도 사라지지만 4단어.
+**하네스 메모**: `collect_variants.py`가 출력 파일을 백엔드 이름으로 만들어 같은 백엔드의 두 모델(Sonnet·Haiku)이 한 파일에 섞이고 이어받기에서 서로 건너뜀(g6g7 UX2 Haiku 일부 누락). g8은 모델별 폴더로 분리해 회피.
+
+## GUI 유형 g4 회차 (철회된 `table_compare` 근거, 규칙 `gui_kind_names_v4.json`, 표본 `g4_kind_*.jsonl`)
+축: XX=`table`(grid·source·tabular는 앞 회차에서 격자·소스 코드·형용사로 탈락) × 동작 {YY: compare·diff / ZZ: triage·curate·curation·keep_drop·decide·verdict·review·select·judge·reconcile / 3단어 compare_triage·compare_decide·compare_review·diff_triage}. 대조 이름 `auto_merge`·`table_merge` 0/N. 판정: **6회 중 1회라도 오독이면 제외**(사용자 규칙) → 남은 것끼리 비교. gpt-6-luna 실행기가 이 회차에 약 75% "OMP prompt did not complete"로 실패해 gpt 표본은 이름당 0~4건, Claude는 전부 3/3.
+
+| 이름 | Claude | gpt | 직접 읽은 뜻 | 판정 |
+|---|---|---|---|---|
+| **table_compare** | 3/3 | 4/4 | 두 표의 스키마·행 차이 확인, 마이그레이션·동기화 검증 | **확정**. XX+YY, 10건 오독 0 |
+| table_compare_triage | 3/3 | 2/2 | 두 표를 비교해 차이를 분류·우선순위 정해 처리 | 차점. XX+YY+ZZ, 5건 오독 0. 3단어, "우선순위" 뉘앙스 |
+| table_diff_triage | 3/3 | 1/1 | 위와 같음(diff) | 저장소 이름(compare)과 짝 안 맞음 |
+| table_compare_review | 3/3 | 1/1 | 비교 후 검토, "리뷰 화면" 언급 | review는 보존·폐기 분류보다 약함 |
+| table_diff | 3/3 | 2/2 | 추가·삭제·변경 행 찾기 | XX+YY, compare와 동의 |
+| table_curate / table_curation | 3/3 | 2/2 | 불필요한 행·열 걸러 품질 좋은 데이터셋 만드는 **파이프라인** | ZZ는 읽히나 대조 없음, 도구가 수행 |
+| table_keep_drop | 3/3 | 0/1 | 마이그레이션 때 남길 열·삭제할 열 **설정** | 대조 없음 |
+| table_triage | 3/3 | 2/2 | **테이블 단위**로 어느 테이블을 먼저 처리할지 우선순위 | 단위 오독 → 제외 |
+| table_reconcile | 3/3 | 2/2 | 불일치를 찾아 **맞춰 주는** 대사 | 도구가 결정 → 제외 |
+| table_compare_decide | 3/3 | 1/1 | 비교 후 동기화·병합·업데이트를 **자동 선택하는 로직** | 제외 |
+| table_decide | 3/3 | 1/1 | **의사결정 테이블** 룩업 분기 로직 | 제외 |
+| table_verdict | 2/3 | 1/1 | 판정값 변수, **포커 게임 승패** | 제외 |
+| table_review | 3/3 | 1/1 | 스키마 리뷰, **표 형식 리뷰 데이터** | 제외 |
+| table_select | 3/3 | 2/2 | **SQL SELECT**, UI 행 선택 | 제외 |
+| table_judge | 2/3 | 2/2 | 문서 이미지에서 **표 인식 판정**(capture와 겹침) | 제외 |
+
+**결정 이유**: studio의 kind 관례(`capture`·`record`·`conflict`·`program_link`·`quote`)는 모두 **대조 대상(XX)**을 가리키고 결정(ZZ)을 이름에 넣은 유형이 없다. studio 자체가 "사람이 결정하는 화면" 틀이라 ZZ는 kind 이름이 아니라 틀이 담는다. `table_compare`는 저장소 `tabular-compare-engine`과 정확히 짝(엔진이 compare를 계산, studio가 compare를 보여 주고 사람이 결정)이고, 2단어라 `table_compare_server.py`·`ui/table_compare/` 관례에 맞으며, 표본이 가장 많고 전부 깨끗하다. ZZ를 이름에 꼭 넣으려면 `table_compare_triage`가 유일한 무오독 후보다.
+
+## GUI 유형 회차 (이전)
 | 회차 | 후보 | 결과 |
 |---|---|---|
 | g1 (`gui_kind_names.json`) | grid_diff, grid_match, grid_scope, grid_merge, grid_reconcile, table_diff, table_match, table_scope, table_merge, source_diff, source_grid, grid_decide | `table_diff`만 근접. source_diff=소스 코드, grid_*=격자·좌표·게임, *_merge=합치는 함수, *_scope=변수 |
