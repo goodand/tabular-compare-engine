@@ -29,3 +29,6 @@ __pycache__/
 # 이 도구가 만드는 읽기 전용 사본·변환 DB·색인 (ldx_workbench)
 .ldx/
 graphify-out/
+
+# 실측 스크립트 작업 폴더 (scripts/evidence/exp_*.py가 생성)
+scripts/evidence/work_*/
